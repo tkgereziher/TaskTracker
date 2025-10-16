@@ -1,1 +1,1 @@
-Simple Task Tracker .NET App
+Simple Task Tracker .NET Core Web API
