@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskTracker.Application;
 using TaskTracker.Application.Interfaces;
-using TaskTracker.Application.Services;
 using TaskTracker.Infrastructure.Data;
 using TaskTracker.Infrastructure.Repositories;
 using AutoMapper;
@@ -19,8 +18,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Repositories & Services
 // ----------------------
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-builder.Services.AddScoped<TaskService>();
-
 // ----------------------
 // MediatR (CQRS)
 // ----------------------
