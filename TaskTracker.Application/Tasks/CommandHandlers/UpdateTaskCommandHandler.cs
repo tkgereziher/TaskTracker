@@ -1,34 +1,40 @@
 ﻿using AutoMapper;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 using TaskTracker.Application.DTOs.Task;
 using TaskTracker.Application.Interfaces;
+using TaskTracker.Domain.Entities;
 using TaskTracker.Application.Tasks.Commands;
 
-public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskResponseDto>
+namespace TaskTracker.Application.Tasks.CommandHandlers
 {
-    private readonly ITaskRepository _repository;
-    private readonly IMapper _mapper;
-
-    public UpdateTaskCommandHandler(ITaskRepository repository, IMapper mapper)
+    public class UpdateTaskCommandHandler : IRequestHandler<UpdateTaskCommand, TaskResponseDto>
     {
-        _repository = repository;
-        _mapper = mapper;
-    }
+        private readonly ITaskRepository _repository;
+        private readonly IMapper _mapper;
 
-    public async Task<TaskResponseDto> Handle(UpdateTaskCommand request, CancellationToken cancellationToken)
-    {
-        // Get the existing task from the repository using the Id
-        var existing = await _repository.GetByIdAsync(request.Id);
-        if (existing == null)
-            throw new KeyNotFoundException($"Task with Id {request.Id} not found");
+        public UpdateTaskCommandHandler(ITaskRepository repository, IMapper mapper)
+        {
+            _repository = repository;
+            _mapper = mapper;
+        }
 
-        // Map the request data to the existing task object
-        _mapper.Map(request, existing);
+        public async Task<TaskResponseDto> Handle(UpdateTaskCommand request, CancellationToken cancellationToken)
+        {
+            // Retrieve the task from the repository using the Id from the command
+            var existingTask = await _repository.GetByIdAsync(request.Id);
+            if (existingTask == null)
+                throw new KeyNotFoundException($"Task with Id {request.Id} not found");
 
-        // Update the task in the repository
-        var updated = await _repository.UpdateAsync(existing);
+            // Map the task request DTO to the existing task (excluding the Id)
+            _mapper.Map(request.TaskRequestDto, existingTask);
 
-        // Map the updated task to a TaskResponseDto and return it
-        return _mapper.Map<TaskResponseDto>(updated);
+            // Update the task in the repository
+            var updatedTask = await _repository.UpdateAsync(existingTask);
+
+            // Return the updated task as a TaskResponseDto
+            return _mapper.Map<TaskResponseDto>(updatedTask);
+        }
     }
 }

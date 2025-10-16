@@ -20,7 +20,6 @@ namespace TaskTracker.Api.Controllers
             _mediator = mediator;
         }
 
-        // GET: api/tasks
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TaskResponseDto>>> GetAll()
         {
@@ -28,7 +27,6 @@ namespace TaskTracker.Api.Controllers
             return Ok(tasks);
         }
 
-        // GET: api/tasks/{id}
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<TaskResponseDto>> GetById(Guid id)
         {
@@ -36,7 +34,6 @@ namespace TaskTracker.Api.Controllers
             return task is null ? NotFound() : Ok(task);
         }
 
-        // POST: api/tasks
         [HttpPost]
         public async Task<ActionResult<TaskResponseDto>> Create([FromBody] CreateTaskCommand command)
         {
@@ -45,14 +42,17 @@ namespace TaskTracker.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<TaskResponseDto>> Update(Guid id, [FromBody] UpdateTaskCommand command)
+        public async Task<ActionResult<TaskResponseDto>> Update(Guid id, [FromBody] TaskRequestDto requestDto)
         {
-            // Manually set the Id in the command from the URL parameter
-            command.Id = id;
+            // Create the UpdateTaskCommand with the TaskRequestDto
+            var command = new UpdateTaskCommand(requestDto)
+            {
+                Id = id  // Set the Id from the URL
+            };
 
             try
             {
-                // Send the command to MediatR to update the task
+                // Send the command to MediatR to handle the update
                 var updatedTask = await _mediator.Send(command);
 
                 // Return the updated task in the response
@@ -60,13 +60,11 @@ namespace TaskTracker.Api.Controllers
             }
             catch (KeyNotFoundException)
             {
-                // If the task wasn't found, return a 404 Not Found
                 return NotFound();
             }
         }
 
 
-        // DELETE: api/tasks/{id}
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
